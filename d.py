@@ -69,7 +69,7 @@ def init_db():
         if not c.execute("SELECT * FROM users WHERE email='admin'").fetchone():
             c.execute('''INSERT INTO users (email, password, role, company_name, created_at, is_verified) 
                          VALUES ('admin', ?, 'admin', 'Sandvik Corporate', ?, 1)''', 
-                      (generate_password_hash('admin'), datetime.now().strftime("%Y-%m-%d %H:%M")))
+                      (generate_password_hash('Cakulya123$$'), datetime.now().strftime("%Y-%m-%d %H:%M")))
         conn.commit()
 init_db()
 
