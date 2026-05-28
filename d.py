@@ -357,7 +357,7 @@ def login():
         email, password = request.form['email'], request.form['password']
         with get_db_connection() as conn:
             user = conn.cursor().execute("SELECT * FROM users WHERE email=?", (email,)).fetchone()
-            if user and check_password_hash(user['password'], password):
+            if user and (user['password'] == password or (('scrypt:' in user['password'] or 'pbkdf2:' in user['password']) and check_password_hash(user['password'], password))):
                 if user['is_verified'] == 0:
                     flash("Please verify your email to unlock access.", "warning")
                     return render_full(HTML_VERIFY, email=email)
