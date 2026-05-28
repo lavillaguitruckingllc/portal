@@ -136,7 +136,7 @@ HTML_LOGIN = '''<div class="row justify-content-center mt-5"><div class="col-md-
 <div class="card-header bg-dark text-white text-center py-4"><h4 class="mb-0">Supplier Portal Login</h4></div><div class="card-body p-4">
 <form method="POST" action="/login"><div class="mb-3"><label class="fw-bold">Corporate Email</label><input type="text" name="email" class="form-control" required></div>
 <div class="mb-4"><label class="d-flex justify-content-between fw-bold">Password <a href="/forgot-password" class="small text-danger text-decoration-none">Forgot?</a></label><input type="password" name="password" class="form-control" required></div>
-<button class="btn btn-dark w-100 py-2 fs-5">Access Account</button></form><hr><p class="text-center mb-0">New Brokerage? <a href="/register" class="text-primary fw-bold">Become an Approved Supplier</a></p></div></div></div></div>'''
+<button class="btn btn-dark w-100 py-2 fs-5">Access Account</button></form><hr><p class="text-center mb-0">New Supplier? <a href="/register" class="text-primary fw-bold">Become an Approved Supplier</a></p></div></div></div></div>'''
 
 HTML_REGISTER = '''<div class="row justify-content-center"><div class="col-md-8"><div class="card shadow-lg">
 <div class="card-header bg-dark text-white py-3"><h4 class="mb-0"><i class="bi bi-building-add"></i> Supplier Setup Application</h4></div><div class="card-body p-4">
