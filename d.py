@@ -513,7 +513,7 @@ def toggle_dnu(broker_id):
         conn.commit()
     flash("Broker safety DNU status updated.", "warning" if new_stat == 1 else "success")
     return redirect('/admin/brokers')
-    @app.route('/admin/upload-for-broker', methods=['POST'])
+@app.route('/admin/upload-for-broker', methods=['POST'])
 def admin_upload_for_broker():
     if session.get('role') != 'admin': return redirect('/')
     broker_email = request.form.get('broker_email')
