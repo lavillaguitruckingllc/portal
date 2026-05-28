@@ -721,7 +721,7 @@ def admin_invite_broker():
     send_email(invite_email, "Action Required: Sandvik Setup Invitation", email_html)
     flash(f"VIP Invitation with custom design successfully sent to {invite_email}.", "success")
     return redirect('/admin/brokers')
-    HTML_GUIDE = '''
+HTML_GUIDE = '''
 <div class="container mt-5">
     <div class="text-center mb-5">
         <h2 class="fw-bold text-primary">Vendor Setup & Billing Guide</h2>
