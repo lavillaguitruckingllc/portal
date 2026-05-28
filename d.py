@@ -119,17 +119,6 @@ HTML_BASE = '''<!DOCTYPE html><html><head><meta charset="UTF-8"><title>My Sandvi
                 </div>
             {% endfor %}{% endif %}
         {% endwith %}
-        {% if session.get('role') == 'supplier' %}
-<div class="container mt-4">
-    <div class="alert alert-info d-flex flex-wrap align-items-center justify-content-between shadow-sm border-0 mb-4" style="background-color: #e0f2fe; color: #0284c7; border-radius: 10px;">
-        <div class="mb-2 mb-md-0">
-            <strong><i class="bi bi-info-circle-fill me-2"></i> Need help getting started?</strong> 
-            <span class="ms-1 text-dark">Read our quick 3-step guide on how to upload documents and submit invoices.</span>
-        </div>
-        <a href="/guide" class="btn btn-primary fw-bold px-4 shadow-sm" style="border-radius: 8px;">View Guide <i class="bi bi-arrow-right ms-1"></i></a>
-    </div>
-</div>
-{% endif %}
         {{ content|safe }}
     </div>
 </div>
@@ -144,6 +133,13 @@ HTML_BASE = '''<!DOCTYPE html><html><head><meta charset="UTF-8"><title>My Sandvi
 </body></html>'''
 
 HTML_LOGIN = '''<div class="row justify-content-center mt-5"><div class="col-md-5"><div class="card shadow-lg">
+<div class="alert alert-info d-flex flex-wrap align-items-center justify-content-between shadow-sm border-0 mb-4" style="background-color: #e0f2fe; color: #0284c7; border-radius: 10px;">
+    <div class="mb-2 mb-md-0">
+        <strong><i class="bi bi-info-circle-fill me-2"></i> New Vendor? Need help?</strong> 
+        <span class="ms-1 text-dark">Read our quick 3-step setup guide before you start.</span>
+    </div>
+    <a href="/guide" class="btn btn-primary fw-bold px-4 shadow-sm" style="border-radius: 8px;">View Guide <i class="bi bi-arrow-right ms-1"></i></a>
+</div>
 <div class="card-header bg-dark text-white text-center py-4"><h4 class="mb-0">Supplier Portal Login</h4></div><div class="card-body p-4">
 <form method="POST" action="/login"><div class="mb-3"><label class="fw-bold">Corporate Email</label><input type="text" name="email" class="form-control" required></div>
 <div class="mb-4"><label class="d-flex justify-content-between fw-bold">Password <a href="/forgot-password" class="small text-danger text-decoration-none">Forgot?</a></label><input type="password" name="password" class="form-control" required></div>
