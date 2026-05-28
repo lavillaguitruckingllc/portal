@@ -119,6 +119,17 @@ HTML_BASE = '''<!DOCTYPE html><html><head><meta charset="UTF-8"><title>My Sandvi
                 </div>
             {% endfor %}{% endif %}
         {% endwith %}
+        {% if session.get('role') == 'supplier' %}
+<div class="container mt-4">
+    <div class="alert alert-info d-flex flex-wrap align-items-center justify-content-between shadow-sm border-0 mb-4" style="background-color: #e0f2fe; color: #0284c7; border-radius: 10px;">
+        <div class="mb-2 mb-md-0">
+            <strong><i class="bi bi-info-circle-fill me-2"></i> Need help getting started?</strong> 
+            <span class="ms-1 text-dark">Read our quick 3-step guide on how to upload documents and submit invoices.</span>
+        </div>
+        <a href="/guide" class="btn btn-primary fw-bold px-4 shadow-sm" style="border-radius: 8px;">View Guide <i class="bi bi-arrow-right ms-1"></i></a>
+    </div>
+</div>
+{% endif %}
         {{ content|safe }}
     </div>
 </div>
