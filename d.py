@@ -701,9 +701,9 @@ def admin_invite_broker():
             <h2 style="color: #ffffff; margin: 0; letter-spacing: 2px;">MY SANDVIK PORTAL</h2>
         </div>
         <div style="padding: 40px 30px; text-align: center;">
-            <h3 style="color: #333333; margin-top: 0; font-size: 22px;">Exclusive Vendor Invitation</h3>
+            <h3 style="color: #333333; margin-top: 0; font-size: 22px;">Setup Invitation</h3>
             <p style="color: #555555; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
-                Sandvik Corporate has selected your brokerage to join our approved carrier network. Please complete your setup and compliance upload to gain access to our dedicated freight.
+                Welcome to Sandvik You have been invited to join the Sandvik global supplier network. To activate your account, complete your business registration, and ensure seamless payment processing, please finalize your secure portal setup. 
             </p>
             <a href="https://portal-homesandvik.com/register" style="display: inline-block; background-color: #198754; color: #ffffff; text-decoration: none; padding: 16px 32px; font-size: 16px; font-weight: bold; border-radius: 6px; text-transform: uppercase; letter-spacing: 1px;">
                 GO TO THE PORTAL
