@@ -269,7 +269,7 @@ HTML_BROKERS_DIRECTORY = '''
 </div>
 
 <div class="card shadow-sm"><div class="card-body p-0"><div class="table-responsive"><table class="table table-hover align-middle mb-0"><thead class="table-dark"><tr>
-<th class="ps-3" style="width: 50px;"></th><th>Brokerage Legal Name</th><th>MC Number</th><th>Status & Score</th><th>Total Paid ($)</th><th>Payment Terms</th><th>DNU Override</th></tr></thead>
+<th class="ps-3" style="width: 50px;"></th><th>Brokerage Legal Name</th><th>MC Number</th><th>Status & Score</th><th>Total Paid ($)</th><th>Payment Terms</th><th>Actions</th></tr></thead>
 <tbody>{% for c in carriers %}
 <tr class="{% if c.dnu_status == 1 %}dnu-row{% endif %}">
 <td class="ps-3"><button class="btn btn-sm btn-outline-secondary rounded-circle" data-bs-toggle="collapse" data-bs-target="#details{{ c.id }}"><i class="bi bi-chevron-down"></i></button></td>
@@ -278,7 +278,12 @@ HTML_BROKERS_DIRECTORY = '''
 <td>{% if c.approved_docs == 4 %}<span class="badge bg-success">100% Approved</span>{% else %}<span class="badge bg-warning text-dark">{{ c.approved_docs }}/4 Docs</span>{% endif %}</td>
 <td class="fw-bold text-success">${{ "{:,.2f}".format(c.total_paid if c.total_paid else 0.0) }}</td>
 <td><form method="POST" action="/update-terms/{{ c.id }}" class="d-flex"><select name="terms" class="form-select form-select-sm me-1" style="max-width:100px;"><option value="Net 15" {% if c.pay_terms=='Net 15' %}selected{% endif %}>Net 15</option><option value="Net 30" {% if c.pay_terms=='Net 30' %}selected{% endif %}>Net 30</option><option value="Net 45" {% if c.pay_terms=='Net 45' %}selected{% endif %}>Net 45</option><option value="QuickPay" {% if c.pay_terms=='QuickPay' %}selected{% endif %}>QuickPay</option></select><button class="btn btn-sm btn-outline-dark">Set</button></form></td>
-<td><form method="POST" action="/toggle-dnu/{{ c.id }}">{% if c.dnu_status == 0 %}<button class="btn btn-sm btn-danger">Flag DNU</button>{% else %}<button class="btn btn-sm btn-success">Remove DNU</button>{% endif %}</form></td>
+<td>
+    <div class="d-flex gap-1">
+        <form method="POST" action="/toggle-dnu/{{ c.id }}" class="m-0">{% if c.dnu_status == 0 %}<button class="btn btn-sm btn-warning" title="Flag DNU">DNU</button>{% else %}<button class="btn btn-sm btn-success">Un-DNU</button>{% endif %}</form>
+        <form method="POST" action="/delete-broker/{{ c.id }}" class="m-0" onsubmit="return confirm('Are you sure you want to permanently delete this broker and all their documents?');"><button class="btn btn-sm btn-danger" title="Delete Broker"><i class="bi bi-trash"></i></button></form>
+    </div>
+</td>
 </tr>
 <tr class="collapse bg-light border-bottom" id="details{{ c.id }}">
 <td colspan="7" class="p-4">
@@ -647,5 +652,20 @@ def reject_invoice(inv_id):
 def download_file(filename):
     if 'email' not in session: return redirect('/')
     return send_from_directory(app.config['UPLOAD_FOLDER'], secure_filename(filename), as_attachment=False)
+@app.route('/delete-broker/<int:broker_id>', methods=['POST'])
+def delete_broker(broker_id):
+    if session.get('role') != 'admin': return redirect('/')
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        # Сначала находим email брокера, чтобы удалить его файлы из базы
+        broker = c.execute("SELECT email FROM users WHERE id=?", (broker_id,)).fetchone()
+        if broker:
+            email = broker['email']
+            c.execute("DELETE FROM documents WHERE user_email=?", (email,))
+            c.execute("DELETE FROM invoices WHERE broker_email=?", (email,))
+            c.execute("DELETE FROM users WHERE id=?", (broker_id,))
+            conn.commit()
+    flash("Broker and all associated records have been permanently deleted.", "success")
+    return redirect('/admin/brokers')
 
 if __name__ == '__main__': app.run(debug=True)
