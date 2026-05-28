@@ -249,16 +249,38 @@ HTML_ADMIN = '''
 {% else %}<tr><td colspan="4" class="text-center py-5 text-muted">No history available yet.</td></tr>{% endfor %}</tbody></table></div></div></div></div></div>'''
 
 HTML_BROKERS_DIRECTORY = '''
-<div class="card shadow-sm mb-4 border-primary">
-<div class="card-header bg-primary text-white"><h5 class="mb-0"><i class="bi bi-cloud-arrow-up-fill"></i> Manual Document Upload (Admin Bypass)</h5></div>
-<div class="card-body"><form method="POST" action="/admin/upload-for-broker" enctype="multipart/form-data" class="row align-items-end">
-<div class="col-md-4"><label class="small fw-bold">Select Broker</label><select name="broker_email" class="form-select" required>
-{% for c in carriers %}<option value="{{ c.email }}">{{ c.company_name }} ({{ c.mc_number }})</option>{% endfor %}</select></div>
-<div class="col-md-3"><label class="small fw-bold">Document Type</label><select name="doc_type" class="form-select" required>
-<option value="W-9 Form">W-9 Form</option><option value="Broker Authority (MC)">Broker Authority (MC)</option>
-<option value="Contingent Cargo Insurance">Contingent Cargo Insurance</option><option value="Voided Check">Voided Check</option></select></div>
-<div class="col-md-3"><label class="small fw-bold">Attach File</label><input type="file" name="file" class="form-control" required></div>
-<div class="col-md-2"><button class="btn btn-success w-100 fw-bold">Approve</button></div></form></div></div>
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card shadow-sm border-primary h-100">
+            <div class="card-header bg-primary text-white"><h5 class="mb-0"><i class="bi bi-cloud-arrow-up-fill"></i> Manual Document Upload</h5></div>
+            <div class="card-body d-flex align-items-center">
+                <form method="POST" action="/admin/upload-for-broker" enctype="multipart/form-data" class="row w-100 align-items-end m-0">
+                    <div class="col-md-4 ps-0"><label class="small fw-bold">Select Broker</label><select name="broker_email" class="form-select" required>
+                    {% for c in carriers %}<option value="{{ c.email }}">{{ c.company_name }} ({{ c.mc_number }})</option>{% endfor %}</select></div>
+                    <div class="col-md-3"><label class="small fw-bold">Doc Type</label><select name="doc_type" class="form-select" required>
+                    <option value="W-9 Form">W-9 Form</option><option value="Broker Authority (MC)">Broker Authority (MC)</option>
+                    <option value="Contingent Cargo Insurance">Contingent Cargo Insurance</option><option value="Voided Check">Voided Check</option></select></div>
+                    <div class="col-md-3"><label class="small fw-bold">Attach File</label><input type="file" name="file" class="form-control" required></div>
+                    <div class="col-md-2 pe-0"><button class="btn btn-primary w-100 fw-bold">Approve</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm border-dark h-100">
+            <div class="card-header bg-dark text-white"><h5 class="mb-0"><i class="bi bi-envelope-paper-fill"></i> Send VIP Invite</h5></div>
+            <div class="card-body d-flex align-items-center">
+                <form method="POST" action="/admin/invite-broker" class="w-100 m-0">
+                    <label class="small fw-bold">Broker Email</label>
+                    <div class="input-group">
+                        <input type="email" name="invite_email" class="form-control" placeholder="broker@company.com" required>
+                        <button class="btn btn-dark fw-bold">Send</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h3 class="mb-0"><i class="bi bi-diagram-3 text-primary"></i> Approved Broker Network</h3>
@@ -281,7 +303,7 @@ HTML_BROKERS_DIRECTORY = '''
 <td>
     <div class="d-flex gap-1">
         <form method="POST" action="/toggle-dnu/{{ c.id }}" class="m-0">{% if c.dnu_status == 0 %}<button class="btn btn-sm btn-warning" title="Flag DNU">DNU</button>{% else %}<button class="btn btn-sm btn-success">Un-DNU</button>{% endif %}</form>
-        <form method="POST" action="/delete-broker/{{ c.id }}" class="m-0" onsubmit="return confirm('Are you sure you want to permanently delete this broker and all their documents?');"><button class="btn btn-sm btn-danger" title="Delete Broker"><i class="bi bi-trash"></i></button></form>
+        <form method="POST" action="/delete-broker/{{ c.id }}" class="m-0" onsubmit="return confirm('Are you sure you want to permanently delete this broker?');"><button class="btn btn-sm btn-danger" title="Delete Broker"><i class="bi bi-trash"></i></button></form>
     </div>
 </td>
 </tr>
@@ -666,6 +688,38 @@ def delete_broker(broker_id):
             c.execute("DELETE FROM users WHERE id=?", (broker_id,))
             conn.commit()
     flash("Broker and all associated records have been permanently deleted.", "success")
+    return redirect('/admin/brokers')
+@app.route('/admin/invite-broker', methods=['POST'])
+def admin_invite_broker():
+    if session.get('role') != 'admin': return redirect('/')
+    invite_email = request.form.get('invite_email')
+    
+    # Тот самый "премиальный" дизайн письма в формате HTML
+    email_html = f'''
+    <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05);">
+        <div style="background-color: #212529; padding: 25px; text-align: center;">
+            <h2 style="color: #ffffff; margin: 0; letter-spacing: 2px;">MY SANDVIK PORTAL</h2>
+        </div>
+        <div style="padding: 40px 30px; text-align: center;">
+            <h3 style="color: #333333; margin-top: 0; font-size: 22px;">Exclusive Vendor Invitation</h3>
+            <p style="color: #555555; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+                Sandvik Corporate has selected your brokerage to join our approved carrier network. Please complete your setup and compliance upload to gain access to our dedicated freight.
+            </p>
+            <a href="https://portal-homesandvik.com/register" style="display: inline-block; background-color: #198754; color: #ffffff; text-decoration: none; padding: 16px 32px; font-size: 16px; font-weight: bold; border-radius: 6px; text-transform: uppercase; letter-spacing: 1px;">
+                GO TO THE PORTAL
+            </a>
+        </div>
+        <div style="background-color: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e0e0e0;">
+            <p style="color: #888888; font-size: 12px; margin: 0;">
+                &copy; 2026 Sandvik Corporate. This is an automated invitation.
+            </p>
+        </div>
+    </div>
+    '''
+    
+    # Функция send_email (которую мы писали ранее) автоматически поймет, что это HTML
+    send_email(invite_email, "Action Required: Sandvik Setup Invitation", email_html)
+    flash(f"VIP Invitation with custom design successfully sent to {invite_email}.", "success")
     return redirect('/admin/brokers')
 
 if __name__ == '__main__': app.run(debug=True)
