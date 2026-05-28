@@ -260,15 +260,36 @@ HTML_BROKERS_DIRECTORY = '''
 <div class="col-md-3"><label class="small fw-bold">Attach File</label><input type="file" name="file" class="form-control" required></div>
 <div class="col-md-2"><button class="btn btn-success w-100 fw-bold">Approve</button></div></form></div></div>
 
-<h3 class="mb-4"><i class="bi bi-diagram-3 text-primary"></i> Approved Broker Network</h3>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0"><i class="bi bi-diagram-3 text-primary"></i> Approved Broker Network</h3>
+    <form method="GET" action="/admin/brokers" class="d-flex" style="max-width: 300px;">
+        <input type="text" name="search" class="form-control me-2" placeholder="Search MC or Name..." value="{{ search_query }}">
+        <button class="btn btn-dark"><i class="bi bi-search"></i></button>
+    </form>
+</div>
+
 <div class="card shadow-sm"><div class="card-body p-0"><div class="table-responsive"><table class="table table-hover align-middle mb-0"><thead class="table-dark"><tr>
-<th class="ps-3">Brokerage Legal Name</th><th>MC Number</th><th>Status & Score</th><th>Total Paid ($)</th><th>Payment Terms</th><th>DNU Override</th></tr></thead>
-<tbody>{% for c in carriers %}<tr class="{% if c.dnu_status == 1 %}dnu-row{% endif %}"><td class="ps-3"><strong>{{ c.company_name }}</strong><br><small class="text-muted">{{ c.email }} | {{ c.phone_number }}</small></td>
+<th class="ps-3" style="width: 50px;"></th><th>Brokerage Legal Name</th><th>MC Number</th><th>Status & Score</th><th>Total Paid ($)</th><th>Payment Terms</th><th>DNU Override</th></tr></thead>
+<tbody>{% for c in carriers %}
+<tr class="{% if c.dnu_status == 1 %}dnu-row{% endif %}">
+<td class="ps-3"><button class="btn btn-sm btn-outline-secondary rounded-circle" data-bs-toggle="collapse" data-bs-target="#details{{ c.id }}"><i class="bi bi-chevron-down"></i></button></td>
+<td><strong>{{ c.company_name }}</strong><br><small class="text-muted">{{ c.email }} | {{ c.phone_number }}</small></td>
 <td><span class="badge bg-info text-dark fs-6">MC# {{ c.mc_number }}</span></td>
 <td>{% if c.approved_docs == 4 %}<span class="badge bg-success">100% Approved</span>{% else %}<span class="badge bg-warning text-dark">{{ c.approved_docs }}/4 Docs</span>{% endif %}</td>
 <td class="fw-bold text-success">${{ "{:,.2f}".format(c.total_paid if c.total_paid else 0.0) }}</td>
 <td><form method="POST" action="/update-terms/{{ c.id }}" class="d-flex"><select name="terms" class="form-select form-select-sm me-1" style="max-width:100px;"><option value="Net 15" {% if c.pay_terms=='Net 15' %}selected{% endif %}>Net 15</option><option value="Net 30" {% if c.pay_terms=='Net 30' %}selected{% endif %}>Net 30</option><option value="Net 45" {% if c.pay_terms=='Net 45' %}selected{% endif %}>Net 45</option><option value="QuickPay" {% if c.pay_terms=='QuickPay' %}selected{% endif %}>QuickPay</option></select><button class="btn btn-sm btn-outline-dark">Set</button></form></td>
-<td><form method="POST" action="/toggle-dnu/{{ c.id }}">{% if c.dnu_status == 0 %}<button class="btn btn-sm btn-danger">Flag DNU</button>{% else %}<button class="btn btn-sm btn-success">Remove DNU</button>{% endif %}</form></td></tr>{% endfor %}</tbody></table></div></div></div>'''
+<td><form method="POST" action="/toggle-dnu/{{ c.id }}">{% if c.dnu_status == 0 %}<button class="btn btn-sm btn-danger">Flag DNU</button>{% else %}<button class="btn btn-sm btn-success">Remove DNU</button>{% endif %}</form></td>
+</tr>
+<tr class="collapse bg-light border-bottom" id="details{{ c.id }}">
+<td colspan="7" class="p-4">
+    <div class="row text-dark">
+        <div class="col-md-4"><strong><i class="bi bi-person-badge text-primary"></i> Primary Contact:</strong><br>{{ c.contact_name }}</div>
+        <div class="col-md-4"><strong><i class="bi bi-bank text-primary"></i> EIN / Tax ID:</strong><br>{{ c.ein_number }}</div>
+        <div class="col-md-4"><strong><i class="bi bi-calendar-check text-primary"></i> Registered On:</strong><br>{{ c.created_at }}</div>
+    </div>
+</td>
+</tr>
+{% endfor %}</tbody></table></div></div></div>'''
 def render_full(template_string, **kwargs): return render_template_string(HTML_BASE, content=render_template_string(template_string, **kwargs))
 
 # --- МАРШРУТЫ ПРИЛОЖЕНИЯ ---
@@ -486,12 +507,24 @@ def admin():
 @app.route('/admin/brokers')
 def admin_brokers():
     if session.get('role') != 'admin': return redirect(url_for('index'))
+    search = request.args.get('search', '')
+    
+    query = '''SELECT u.*, 
+               (SELECT COUNT(*) FROM documents d WHERE d.user_email=u.email AND d.status='Approved') as approved_docs,
+               (SELECT SUM(amount) FROM invoices i WHERE i.broker_email=u.email AND i.status='Paid') as total_paid
+               FROM users u WHERE u.role='supplier' '''
+    params = []
+    
+    if search:
+        query += " AND (u.company_name LIKE ? OR u.mc_number LIKE ?) "
+        params.extend([f'%{search}%', f'%{search}%'])
+        
+    query += " ORDER BY u.company_name ASC"
+
     with get_db_connection() as conn:
-        carriers = conn.cursor().execute('''SELECT u.*, 
-            (SELECT COUNT(*) FROM documents d WHERE d.user_email=u.email AND d.status='Approved') as approved_docs,
-            (SELECT SUM(amount) FROM invoices i WHERE i.broker_email=u.email AND i.status='Paid') as total_paid
-            FROM users u WHERE u.role='supplier' ORDER BY u.company_name ASC''').fetchall()
-    return render_full(HTML_BROKERS_DIRECTORY, carriers=carriers)
+        carriers = conn.cursor().execute(query, params).fetchall()
+        
+    return render_full(HTML_BROKERS_DIRECTORY, carriers=carriers, search_query=search)
 
 @app.route('/update-terms/<int:broker_id>', methods=['POST'])
 def update_terms(broker_id):
