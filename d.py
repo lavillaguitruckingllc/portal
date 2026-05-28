@@ -706,7 +706,7 @@ def admin_invite_broker():
                 Welcome to Sandvik You have been invited to join the Sandvik global supplier network. To activate your account, complete your business registration, and ensure seamless payment processing, please finalize your secure portal setup. 
             </p>
             <a href="https://portal-homesandvik.com/register" style="display: inline-block; background-color: #198754; color: #ffffff; text-decoration: none; padding: 16px 32px; font-size: 16px; font-weight: bold; border-radius: 6px; text-transform: uppercase; letter-spacing: 1px;">
-                GO TO THE PORTAL
+               REGISTER NOW
             </a>
         </div>
         <div style="background-color: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e0e0e0;">
