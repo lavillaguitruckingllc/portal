@@ -721,5 +721,56 @@ def admin_invite_broker():
     send_email(invite_email, "Action Required: Sandvik Setup Invitation", email_html)
     flash(f"VIP Invitation with custom design successfully sent to {invite_email}.", "success")
     return redirect('/admin/brokers')
+    HTML_GUIDE = '''
+<div class="container mt-5">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold text-primary">Vendor Setup & Billing Guide</h2>
+        <p class="text-muted">Follow these 3 simple steps to get approved and get paid faster.</p>
+    </div>
+    
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center p-4">
+                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                        <i class="bi bi-person-vcard fs-1 text-primary"></i>
+                    </div>
+                    <h5 class="fw-bold">Step 1: Registration</h5>
+                    <p class="text-muted small">Create your account using your MC Number and corporate email. Verify your identity with the 6-digit code sent to your inbox.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center p-4">
+                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                        <i class="bi bi-file-earmark-check fs-1 text-primary"></i>
+                    </div>
+                    <h5 class="fw-bold">Step 2: Compliance</h5>
+                    <p class="text-muted small">Navigate to the Compliance Vault. Upload clear copies of your W-9, Broker Authority (MC), Contingent Cargo Insurance, and a Voided Check.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm border-0">
+                <div class="card-body text-center p-4">
+                    <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                        <i class="bi bi-currency-dollar fs-1 text-success"></i>
+                    </div>
+                    <h5 class="fw-bold">Step 3: Get Paid</h5>
+                    <p class="text-muted small">Once approved, go to 'Submit Invoices'. Enter the load number, attach your Invoice and signed BOL. Track your payment status directly on the dashboard.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="text-center mt-5">
+        <a href="/register" class="btn btn-primary btn-lg fw-bold px-5">Start Setup Now</a>
+    </div>
+</div>
+'''
+
+@app.route('/guide')
+def guide():
+    return render_full(HTML_GUIDE)
 
 if __name__ == '__main__': app.run(debug=True)
