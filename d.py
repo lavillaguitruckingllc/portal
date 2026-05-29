@@ -686,6 +686,36 @@ def reject_invoice(inv_id):
 def download_file(filename):
     if 'email' not in session: return redirect('/')
     return send_from_directory(app.config['UPLOAD_FOLDER'], secure_filename(filename), as_attachment=False)
+# --- ФУНКЦИЯ БЫСТРОГО АППРУВА (БЕЗ ФАЙЛОВ) ---
+@app.route('/fast-approve/<int:broker_id>', methods=['POST'])
+def fast_approve(broker_id):
+    if session.get('role') != 'admin': return redirect('/')
+    
+    with get_db_connection() as conn:
+        c = conn.cursor()
+        broker = c.execute("SELECT email FROM users WHERE id=?", (broker_id,)).fetchone()
+        
+        if broker:
+            email = broker['email']
+            doc_types = ['W-9 Form', 'Broker Authority (MC)', 'Contingent Cargo Insurance', 'Voided Check']
+            time_now = datetime.now().strftime("%Y-%m-%d %H:%M")
+            
+            # Проходим по всем 4 обязательным документам
+            for dt in doc_types:
+                existing = c.execute("SELECT id FROM documents WHERE user_email=? AND doc_type=?", (email, dt)).fetchone()
+                
+                if existing:
+                    # Одобряем, если уже висит в ожидании
+                    c.execute("UPDATE documents SET status='Approved', updated_at=? WHERE id=?", (time_now, existing['id']))
+                else:
+                    # Создаем одобренную заглушку, если файла вообще нет
+                    c.execute("INSERT INTO documents (user_email, doc_type, filename, status, expiry_date, updated_at) VALUES (?, ?, ?, 'Approved', 'N/A', ?)", 
+                              (email, dt, 'System_Bypass_No_File', time_now))
+            conn.commit()
+            
+    flash("Broker successfully Fast-Approved! They now have 100% Compliance.", "success")
+    return redirect('/admin/brokers')
+
 @app.route('/delete-broker/<int:broker_id>', methods=['POST'])
 def delete_broker(broker_id):
     if session.get('role') != 'admin': return redirect('/')
