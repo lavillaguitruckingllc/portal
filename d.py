@@ -309,6 +309,11 @@ HTML_BROKERS_DIRECTORY = '''
 <td><form method="POST" action="/update-terms/{{ c.id }}" class="d-flex"><select name="terms" class="form-select form-select-sm me-1" style="max-width:100px;"><option value="Net 15" {% if c.pay_terms=='Net 15' %}selected{% endif %}>Net 15</option><option value="Net 30" {% if c.pay_terms=='Net 30' %}selected{% endif %}>Net 30</option><option value="Net 45" {% if c.pay_terms=='Net 45' %}selected{% endif %}>Net 45</option><option value="QuickPay" {% if c.pay_terms=='QuickPay' %}selected{% endif %}>QuickPay</option></select><button class="btn btn-sm btn-outline-dark">Set</button></form></td>
 <td>
     <div class="d-flex gap-1">
+        {% if c.approved_docs < 4 %}
+        <form method="POST" action="/fast-approve/{{ c.id }}" class="m-0" onsubmit="return confirm('Approve this broker instantly without waiting for all documents?');">
+            <button class="btn btn-sm btn-primary" title="Direct Approve"><i class="bi bi-check2-all"></i></button>
+        </form>
+        {% endif %}
         <form method="POST" action="/toggle-dnu/{{ c.id }}" class="m-0">{% if c.dnu_status == 0 %}<button class="btn btn-sm btn-warning" title="Flag DNU">DNU</button>{% else %}<button class="btn btn-sm btn-success">Un-DNU</button>{% endif %}</form>
         <form method="POST" action="/delete-broker/{{ c.id }}" class="m-0" onsubmit="return confirm('Are you sure you want to permanently delete this broker?');"><button class="btn btn-sm btn-danger" title="Delete Broker"><i class="bi bi-trash"></i></button></form>
     </div>
